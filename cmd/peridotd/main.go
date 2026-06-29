@@ -54,7 +54,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("init cache: %v", err)
 	}
-	defer cacheMgr.Close()
+	defer func() { _ = cacheMgr.Close() }()
 
 	engine, err := display.New()
 	if err != nil {

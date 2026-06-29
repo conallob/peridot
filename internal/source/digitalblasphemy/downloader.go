@@ -38,7 +38,7 @@ func (s *Source) Fetch(ctx context.Context, m *pb.WallpaperMetadata) (string, er
 	if err != nil {
 		return "", err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 	if resp.StatusCode != http.StatusOK {
 		return "", fmt.Errorf("download %s: status %d", m.OriginUrl, resp.StatusCode)
 	}
@@ -49,11 +49,14 @@ func (s *Source) Fetch(ctx context.Context, m *pb.WallpaperMetadata) (string, er
 		return "", err
 	}
 	if _, err := io.Copy(f, resp.Body); err != nil {
-		f.Close()
-		os.Remove(tmp)
+		_ = f.Close()
+		_ = os.Remove(tmp)
 		return "", err
 	}
-	f.Close()
+	if err := f.Close(); err != nil {
+		_ = os.Remove(tmp)
+		return "", err
+	}
 	if err := os.Rename(tmp, dest); err != nil {
 		return "", err
 	}

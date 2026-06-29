@@ -27,7 +27,7 @@ func (c *Client) Send(req *pb.CommandRequest) (*pb.CommandResponse, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer conn.Close()
+	defer func() { _ = conn.Close() }()
 
 	_ = conn.SetDeadline(time.Now().Add(30 * time.Second))
 
