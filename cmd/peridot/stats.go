@@ -57,8 +57,8 @@ func renderStats(w *os.File, p *pb.StatsPayload) {
 	if p.Days > 0 {
 		period = fmt.Sprintf("last %d days", p.Days)
 	}
-	fmt.Fprintf(w, "\nPeridot stats — %s\n\n", period)
-	fmt.Fprintf(w, "  Total displays: %d\n", p.TotalDisplays)
+	_, _ = fmt.Fprintf(w, "\nPeridot stats — %s\n\n", period)
+	_, _ = fmt.Fprintf(w, "  Total displays: %d\n", p.TotalDisplays)
 
 	const rule = "  ─────────────────────────────────────────────────────────"
 
@@ -70,9 +70,9 @@ func renderStats(w *os.File, p *pb.StatsPayload) {
 				maxCount = ws.DisplayCount
 			}
 		}
-		fmt.Fprintf(w, "\n  Top wallpapers:\n%s\n", rule)
+		_, _ = fmt.Fprintf(w, "\n  Top wallpapers:\n%s\n", rule)
 		tw := tabwriter.NewWriter(w, 0, 2, 2, ' ', 0)
-		fmt.Fprintln(tw, "   #\tTitle\tSource\tCount\tBar")
+		_, _ = fmt.Fprintln(tw, "   #\tTitle\tSource\tCount\tBar")
 		for i, ws := range p.TopWallpapers {
 			title := "(unknown)"
 			source := ""
@@ -82,18 +82,18 @@ func renderStats(w *os.File, p *pb.StatsPayload) {
 				}
 				source = ws.Wallpaper.SourceId
 			}
-			fmt.Fprintf(tw, "   %d\t%s\t%s\t%d\t%s\n",
+			_, _ = fmt.Fprintf(tw, "   %d\t%s\t%s\t%d\t%s\n",
 				i+1, title, source, ws.DisplayCount, bar(ws.DisplayCount, maxCount, 12))
 		}
 		_ = tw.Flush()
-		fmt.Fprintln(w, rule)
+		_, _ = fmt.Fprintln(w, rule)
 	}
 
 	// By source.
 	if len(p.SourceBreakdown) > 0 {
-		fmt.Fprintf(w, "\n  By source:\n%s\n", rule)
+		_, _ = fmt.Fprintf(w, "\n  By source:\n%s\n", rule)
 		tw := tabwriter.NewWriter(w, 0, 2, 2, ' ', 0)
-		fmt.Fprintln(tw, "   Source\tCount\t%")
+		_, _ = fmt.Fprintln(tw, "   Source\tCount\t%")
 		for _, ss := range p.SourceBreakdown {
 			pct := 0
 			if p.TotalDisplays > 0 {
@@ -103,10 +103,10 @@ func renderStats(w *os.File, p *pb.StatsPayload) {
 			if name == "" {
 				name = ss.SourceId
 			}
-			fmt.Fprintf(tw, "   %s\t%d\t%d%%\n", name, ss.DisplayCount, pct)
+			_, _ = fmt.Fprintf(tw, "   %s\t%d\t%d%%\n", name, ss.DisplayCount, pct)
 		}
 		_ = tw.Flush()
-		fmt.Fprintln(w, rule)
+		_, _ = fmt.Fprintln(w, rule)
 	}
 
 	// Hourly heatmap.
@@ -117,9 +117,9 @@ func renderStats(w *os.File, p *pb.StatsPayload) {
 				maxHour = c
 			}
 		}
-		fmt.Fprintf(w, "\n  Hourly activity (displays per hour):\n")
+		_, _ = fmt.Fprintf(w, "\n  Hourly activity (displays per hour):\n")
 		for h := 0; h < 24; h++ {
-			fmt.Fprintf(w, "  %02d %s\n", h, bar(p.HourlyCounts[h], maxHour, 20))
+			_, _ = fmt.Fprintf(w, "  %02d %s\n", h, bar(p.HourlyCounts[h], maxHour, 20))
 		}
 	}
 }
