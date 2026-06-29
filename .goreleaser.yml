@@ -1,0 +1,45 @@
+version: 2
+project_name: peridot
+before:
+  hooks:
+    - go mod tidy
+builds:
+  - id: peridotd
+    binary: peridotd
+    main: ./cmd/peridotd
+    goos: [darwin, linux]
+    goarch: [amd64, arm64]
+    env:
+      - CGO_ENABLED=0
+    ldflags:
+      - -s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{.Date}}
+  - id: peridot
+    binary: peridot
+    main: ./cmd/peridot
+    goos: [darwin, linux]
+    goarch: [amd64, arm64]
+    env:
+      - CGO_ENABLED=0
+    ldflags:
+      - -s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{.Date}}
+archives:
+  - formats: [tar.gz]
+    name_template: "{{ .ProjectName }}_{{ .Os }}_{{ .Arch }}"
+    files:
+      - contrib/com.peridot.peridotd.plist
+      - contrib/config.example.toml
+checksum:
+  name_template: checksums.txt
+brews:
+  - name: peridot
+    repository:
+      owner: conallob
+      name: homebrew-tap
+      token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
+    homepage: https://github.com/conallob/peridot
+    description: "Cache-aware, multi-source wallpaper rotation daemon"
+    install: |
+      bin.install "peridotd"
+      bin.install "peridot"
+    test: |
+      system "#{bin}/peridot", "--version"
