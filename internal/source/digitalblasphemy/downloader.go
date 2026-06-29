@@ -38,7 +38,7 @@ func (s *Source) Fetch(ctx context.Context, m *pb.WallpaperMetadata) (string, er
 	if err != nil {
 		return "", err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 	if resp.StatusCode != http.StatusOK {
 		return "", fmt.Errorf("download %s: status %d", m.OriginUrl, resp.StatusCode)
 	}
