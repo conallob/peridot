@@ -5,6 +5,4 @@ linters:
     - staticcheck
     - unused
     - errcheck
-    - gosimple
     - ineffassign
-    - typecheck
