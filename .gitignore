@@ -2,3 +2,4 @@
 *.lock.pb
 *.out.log
 *.err.log
+coverage.out
