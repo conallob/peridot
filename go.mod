@@ -1,6 +1,6 @@
 module github.com/conallob/peridot
 
-go 1.25
+go 1.24
 
 require (
 	github.com/BurntSushi/toml v1.4.0
