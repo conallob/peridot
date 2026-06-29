@@ -49,11 +49,14 @@ func (s *Source) Fetch(ctx context.Context, m *pb.WallpaperMetadata) (string, er
 		return "", err
 	}
 	if _, err := io.Copy(f, resp.Body); err != nil {
-		f.Close()
-		os.Remove(tmp)
+		_ = f.Close()
+		_ = os.Remove(tmp)
 		return "", err
 	}
-	f.Close()
+	if err := f.Close(); err != nil {
+		_ = os.Remove(tmp)
+		return "", err
+	}
 	if err := os.Rename(tmp, dest); err != nil {
 		return "", err
 	}

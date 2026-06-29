@@ -36,7 +36,7 @@ func openIndex(dbPath string) (*index, error) {
 		return nil, err
 	}
 	if _, err := db.Exec(schema); err != nil {
-		db.Close()
+		_ = db.Close()
 		return nil, err
 	}
 	return &index{db: db}, nil
@@ -101,7 +101,7 @@ func (ix *index) evictionCandidates(policy pb.EvictionPolicy, limit int) ([]stri
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 	var ids []string
 	for rows.Next() {
 		var id string

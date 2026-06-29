@@ -113,11 +113,11 @@ func (s *LocalDirectorySource) Watch(ctx context.Context) (<-chan struct{}, erro
 		return nil, err
 	}
 	if err := w.Add(s.path); err != nil {
-		w.Close()
+		_ = w.Close()
 		return nil, err
 	}
 	go func() {
-		defer w.Close()
+		defer func() { _ = w.Close() }()
 		defer close(ch)
 		for {
 			select {

@@ -69,7 +69,7 @@ func (s *Server) Serve(ctx context.Context) error {
 }
 
 func (s *Server) handleConn(ctx context.Context, conn net.Conn) {
-	defer conn.Close()
+	defer func() { _ = conn.Close() }()
 	for {
 		req := &pb.CommandRequest{}
 		if err := ReadFrame(conn, req); err != nil {

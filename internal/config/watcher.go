@@ -22,7 +22,7 @@ func NewWatcher(path string) (*Watcher, error) {
 	}
 	// Watch the parent directory so we still catch atomic rename-replace writes.
 	if err := w.Add(filepath.Dir(path)); err != nil {
-		w.Close()
+		_ = w.Close()
 		return nil, err
 	}
 	return &Watcher{path: path, w: w}, nil
@@ -31,7 +31,7 @@ func NewWatcher(path string) (*Watcher, error) {
 // Watch invokes onReload with the freshly compiled config whenever the file
 // changes, until ctx is cancelled. Compilation errors are passed to onError.
 func (cw *Watcher) Watch(ctx context.Context, onReload func(*pb.Config), onError func(error)) {
-	defer cw.w.Close()
+	defer func() { _ = cw.w.Close() }()
 	target := filepath.Clean(cw.path)
 	for {
 		select {
