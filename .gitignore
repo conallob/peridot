@@ -1,0 +1,4 @@
+/bin/
+*.lock.pb
+*.out.log
+*.err.log

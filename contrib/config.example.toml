@@ -1,0 +1,52 @@
+# Example peridot configuration. Copy to ~/.peridot/config.toml.
+
+[scheduler]
+interval = "30m"
+shuffle = true
+per_display = false
+change_on = ["timer", "wake"]
+
+[cache]
+max_size = "2GB"
+max_items = 500
+prefetch_ahead = 3
+eviction_policy = "lru"
+# location = "~/.peridot/cache"
+
+[[sources]]
+id = "pictures"
+type = "local"
+display_name = "My Pictures"
+weight = 1.0
+path = "/home/user/Pictures/wallpapers"
+watch = true
+
+[[sources]]
+id = "db"
+type = "digital_blasphemy"
+display_name = "Digital Blasphemy"
+weight = 2.0
+username = "example"
+keychain_service = "com.peridot.digitalblasphemy"
+preferred_resolution = "3840x2160"
+check_interval = "6h"
+auto_download_new = true
+
+[[sources]]
+id = "drive"
+type = "google_drive"
+display_name = "Drive Wallpapers"
+weight = 1.0
+folder_id = "0ABCDEF_example"
+credentials_path = "/home/user/.peridot/gdrive-credentials.json"
+preferred_resolution = "3840x2160"
+
+[[sources]]
+id = "random-api"
+type = "url"
+display_name = "Random Wallpaper API"
+weight = 1.0
+endpoint = "https://example.com/random-wallpaper"
+
+[sources.headers]
+Authorization = "Bearer TOKEN"
