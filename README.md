@@ -2,6 +2,13 @@
 
 Cache-aware, multi-source wallpaper rotation daemon.
 
+[![Build](https://github.com/conallob/peridot/actions/workflows/ci.yml/badge.svg)](https://github.com/conallob/peridot/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/conallob/peridot/branch/main/graph/badge.svg)](https://codecov.io/gh/conallob/peridot)
+[![Go Report Card](https://goreportcard.com/badge/github.com/conallob/peridot)](https://goreportcard.com/report/github.com/conallob/peridot)
+[![Go Reference](https://pkg.go.dev/badge/github.com/conallob/peridot.svg)](https://pkg.go.dev/github.com/conallob/peridot)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20A%20Coffee-support-yellow?logo=buy-me-a-coffee)](https://www.buymeacoffee.com/conallob)
+
 ## Overview
 
 macOS's native `wallpaper.agent` has no cache bounds and eagerly caches entire
@@ -92,6 +99,7 @@ watch = true
 | `peridot fetch`    | Fetch new items from a source.                    |
 | `peridot config`   | Validate, compile, dump, diff, or reload config.  |
 | `peridot daemon`   | Install, start, stop, restart, or status.         |
+| `peridot stats`    | Show wallpaper display statistics (Atuin-style).  |
 | `peridot mcp`      | Run the MCP server.                               |
 
 ## Platform support
