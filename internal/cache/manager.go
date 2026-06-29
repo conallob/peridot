@@ -11,9 +11,10 @@ import (
 // Manager coordinates the on-disk image cache and its SQLite metadata index,
 // enforcing size/item limits via the configured eviction policy.
 type Manager struct {
-	mu       sync.Mutex
-	ix       *index
-	dir      string
+	mu         sync.Mutex
+	ix         *index
+	displayLog *DisplayLog
+	dir        string
 	maxBytes int64
 	maxItems int32
 	policy   pb.EvictionPolicy
@@ -37,13 +38,17 @@ func New(opts Options) (*Manager, error) {
 		return nil, err
 	}
 	return &Manager{
-		ix:       ix,
-		dir:      opts.Dir,
-		maxBytes: opts.MaxBytes,
-		maxItems: opts.MaxItems,
-		policy:   opts.Policy,
+		ix:         ix,
+		displayLog: NewDisplayLog(ix),
+		dir:        opts.Dir,
+		maxBytes:   opts.MaxBytes,
+		maxItems:   opts.MaxItems,
+		policy:     opts.Policy,
 	}, nil
 }
+
+// Log returns the display-event log backed by the same SQLite connection.
+func (m *Manager) Log() *DisplayLog { return m.displayLog }
 
 // Close releases the index.
 func (m *Manager) Close() error { return m.ix.close() }

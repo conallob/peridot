@@ -50,6 +50,7 @@ func rootCmd() *cobra.Command {
 			return &pb.CommandRequest{Command: &pb.CommandRequest_ListSources{ListSources: &pb.ListSourcesCommand{}}}
 		}),
 		historyCmd(),
+		statsCmd(),
 		fetchCmd(),
 		setIntervalCmd(),
 		configCmd(),

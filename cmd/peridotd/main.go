@@ -78,6 +78,7 @@ func main() {
 		Sources:  srcs,
 		Interval: interval,
 		Shuffle:  shuffle,
+		Log:      cacheMgr.Log(),
 	})
 
 	d := &daemon{sched: sched, cache: cacheMgr, sources: srcs}
