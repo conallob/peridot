@@ -113,19 +113,3 @@ func (ix *index) evictionCandidates(policy pb.EvictionPolicy, limit int) ([]stri
 	return ids, rows.Err()
 }
 
-func (ix *index) listIDs() ([]string, error) {
-	rows, err := ix.db.Query(`SELECT id FROM wallpapers`)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var ids []string
-	for rows.Next() {
-		var id string
-		if err := rows.Scan(&id); err != nil {
-			return nil, err
-		}
-		ids = append(ids, id)
-	}
-	return ids, rows.Err()
-}
