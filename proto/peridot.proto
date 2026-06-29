@@ -1,0 +1,111 @@
+syntax = "proto3";
+package peridot;
+option go_package = "github.com/conallob/peridot/gen/peridot";
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/duration.proto";
+
+message WallpaperMetadata {
+  string id = 1;
+  string title = 2;
+  string source_id = 3;
+  string local_path = 4;
+  string origin_url = 5;
+  google.protobuf.Timestamp published_at = 6;
+  google.protobuf.Timestamp cached_at = 7;
+  Resolution resolution = 8;
+  repeated string tags = 9;
+  int64 file_size_bytes = 10;
+}
+
+message Resolution { int32 width = 1; int32 height = 2; }
+
+message SourceStatus {
+  string id = 1; string display_name = 2; SourceType type = 3; bool healthy = 4;
+  google.protobuf.Timestamp last_checked = 5; google.protobuf.Timestamp last_fetched = 6;
+  int32 available_count = 7; string last_error = 8;
+}
+
+enum SourceType {
+  SOURCE_TYPE_UNSPECIFIED = 0; SOURCE_TYPE_LOCAL = 1;
+  SOURCE_TYPE_DIGITAL_BLASPHEMY = 2; SOURCE_TYPE_GOOGLE_DRIVE = 3; SOURCE_TYPE_URL = 4;
+}
+
+message CacheStatus {
+  int64 current_size_bytes = 1; int64 max_size_bytes = 2;
+  int32 item_count = 3; int32 max_items = 4; EvictionPolicy eviction_policy = 5;
+}
+
+enum EvictionPolicy {
+  EVICTION_POLICY_UNSPECIFIED = 0; EVICTION_POLICY_LRU = 1;
+  EVICTION_POLICY_FIFO = 2; EVICTION_POLICY_RANDOM = 3;
+}
+
+message CommandRequest {
+  oneof command {
+    NextCommand next = 1; PrevCommand prev = 2; PauseCommand pause = 3;
+    ResumeCommand resume = 4; StatusCommand status = 5; HistoryCommand history = 6;
+    SetIntervalCommand set_interval = 7; ListSourcesCommand list_sources = 8;
+    FetchSourceCommand fetch_source = 9;
+  }
+}
+
+message CommandResponse {
+  bool ok = 1; string error = 2;
+  oneof payload {
+    WallpaperPayload wallpaper = 3; StatusPayload status = 4;
+    HistoryPayload history = 5; SourcesPayload sources = 6; FetchPayload fetch = 7;
+  }
+}
+
+message NextCommand {} message PrevCommand {} message PauseCommand {}
+message ResumeCommand {} message StatusCommand {}
+message HistoryCommand { int32 limit = 1; }
+message SetIntervalCommand { google.protobuf.Duration interval = 1; }
+message ListSourcesCommand {} message FetchSourceCommand { string source_id = 1; }
+
+message WallpaperPayload { WallpaperMetadata current = 1; }
+message HistoryPayload { repeated HistoryEntry entries = 1; }
+message SourcesPayload { repeated SourceStatus sources = 1; }
+message FetchPayload { int32 queued = 1; }
+
+message HistoryEntry { WallpaperMetadata wallpaper = 1; google.protobuf.Timestamp displayed_at = 2; }
+
+message StatusPayload {
+  WallpaperMetadata current = 1; bool paused = 2;
+  google.protobuf.Duration next_change_in = 3; CacheStatus cache = 4;
+  repeated SourceStatus sources = 5;
+}
+
+message Config { SchedulerConfig scheduler = 1; CacheConfig cache = 2; repeated SourceConfig sources = 3; }
+
+message SchedulerConfig {
+  google.protobuf.Duration interval = 1; bool shuffle = 2; bool per_display = 3;
+  repeated ChangeEvent change_on = 4;
+}
+
+enum ChangeEvent {
+  CHANGE_EVENT_UNSPECIFIED = 0; CHANGE_EVENT_TIMER = 1;
+  CHANGE_EVENT_WAKE = 2; CHANGE_EVENT_LOGIN = 3;
+}
+
+message CacheConfig {
+  int64 max_size_bytes = 1; int32 max_items = 2; int32 prefetch_ahead = 3;
+  EvictionPolicy eviction_policy = 4; string location = 5;
+}
+
+message SourceConfig {
+  string id = 1; SourceType type = 2; string display_name = 3; float weight = 4;
+  oneof config {
+    LocalSourceConfig local = 5; DigitalBlasphemySourceConfig digital_blasphemy = 6;
+    GoogleDriveSourceConfig google_drive = 7; URLSourceConfig url = 8;
+  }
+}
+
+message LocalSourceConfig { string path = 1; bool watch = 2; }
+message DigitalBlasphemySourceConfig {
+  string username = 1; string keychain_service = 2; string preferred_resolution = 3;
+  google.protobuf.Duration check_interval = 4; bool auto_download_new = 5;
+}
+message GoogleDriveSourceConfig { string folder_id = 1; string credentials_path = 2; string preferred_resolution = 3; }
+message URLSourceConfig { string endpoint = 1; map<string, string> headers = 2; }
