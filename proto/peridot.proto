@@ -46,7 +46,7 @@ message CommandRequest {
     NextCommand next = 1; PrevCommand prev = 2; PauseCommand pause = 3;
     ResumeCommand resume = 4; StatusCommand status = 5; HistoryCommand history = 6;
     SetIntervalCommand set_interval = 7; ListSourcesCommand list_sources = 8;
-    FetchSourceCommand fetch_source = 9;
+    FetchSourceCommand fetch_source = 9; StatsCommand stats = 10;
   }
 }
 
@@ -55,6 +55,7 @@ message CommandResponse {
   oneof payload {
     WallpaperPayload wallpaper = 3; StatusPayload status = 4;
     HistoryPayload history = 5; SourcesPayload sources = 6; FetchPayload fetch = 7;
+    StatsPayload stats_payload = 8;
   }
 }
 
@@ -100,6 +101,30 @@ message SourceConfig {
     LocalSourceConfig local = 5; DigitalBlasphemySourceConfig digital_blasphemy = 6;
     GoogleDriveSourceConfig google_drive = 7; URLSourceConfig url = 8;
   }
+}
+
+message StatsCommand {
+  int32 days = 1;   // 0 means all time
+  int32 top = 2;    // top N wallpapers, default 10
+}
+
+message WallpaperStat {
+  WallpaperMetadata wallpaper = 1;
+  int32 display_count = 2;
+}
+
+message SourceStat {
+  string source_id = 1;
+  string display_name = 2;
+  int32 display_count = 3;
+}
+
+message StatsPayload {
+  int32 total_displays = 1;
+  int32 days = 2;
+  repeated WallpaperStat top_wallpapers = 3;
+  repeated SourceStat source_breakdown = 4;
+  repeated int32 hourly_counts = 5;  // 24 elements, index = hour (0-23)
 }
 
 message LocalSourceConfig { string path = 1; bool watch = 2; }

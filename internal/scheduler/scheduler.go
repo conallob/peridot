@@ -9,6 +9,7 @@ import (
 	"time"
 
 	pb "github.com/conallob/peridot/gen/peridot"
+	"github.com/conallob/peridot/internal/cache"
 	"github.com/conallob/peridot/internal/display"
 	"github.com/conallob/peridot/internal/platform"
 	"github.com/conallob/peridot/internal/source"
@@ -27,6 +28,7 @@ type Scheduler struct {
 
 	paused  atomic.Bool
 	history *history
+	log     *cache.DisplayLog
 
 	resetCh  chan struct{}
 	lastTick time.Time
@@ -39,6 +41,7 @@ type Options struct {
 	Sources  []source.Source
 	Interval time.Duration
 	Shuffle  bool
+	Log      *cache.DisplayLog
 }
 
 // New creates a Scheduler.
@@ -53,6 +56,7 @@ func New(opts Options) *Scheduler {
 		sources:  opts.Sources,
 		interval: interval,
 		shuffle:  opts.Shuffle,
+		log:      opts.Log,
 		history:  newHistory(),
 		resetCh:  make(chan struct{}, 1),
 	}
@@ -129,7 +133,15 @@ func (s *Scheduler) advance(ctx context.Context) error {
 	}
 	m.CachedAt = timestamppb.New(time.Now())
 	s.history.add(m)
+	s.record(m)
 	return nil
+}
+
+// record logs a display event if a display log is configured.
+func (s *Scheduler) record(m *pb.WallpaperMetadata) {
+	if s.log != nil && m != nil {
+		_ = s.log.Record(m.Id, m.SourceId, m.Title)
+	}
 }
 
 // pick chooses a wallpaper from the configured sources.
@@ -192,6 +204,7 @@ func (s *Scheduler) Prev(ctx context.Context) (*pb.WallpaperMetadata, error) {
 		}
 	}
 	s.history.add(m)
+	s.record(m)
 	s.kick()
 	return m, nil
 }

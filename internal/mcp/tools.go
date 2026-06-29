@@ -96,6 +96,19 @@ func registerTools(srv *server.MCPServer, b *bridge) {
 			return b.call(&pb.CommandRequest{Command: &pb.CommandRequest_SetInterval{SetInterval: &pb.SetIntervalCommand{Interval: durationpb.New(d)}}})
 		},
 	)
+
+	srv.AddTool(
+		mcp.NewTool("wallpaper_stats",
+			mcp.WithDescription("Show wallpaper display statistics: totals, top wallpapers, per-source breakdown, and an hourly histogram."),
+			mcp.WithNumber("days", mcp.Description("Number of days to include (0 = all time). Default 7.")),
+			mcp.WithNumber("top", mcp.Description("Number of top wallpapers to return. Default 10.")),
+		),
+		func(ctx context.Context, req mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+			days := int32(req.GetInt("days", 7))
+			top := int32(req.GetInt("top", 10))
+			return b.call(&pb.CommandRequest{Command: &pb.CommandRequest_Stats{Stats: &pb.StatsCommand{Days: days, Top: top}}})
+		},
+	)
 }
 
 // call sends req and renders the response as a JSON tool result.

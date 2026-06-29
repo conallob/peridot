@@ -39,6 +39,10 @@ func openIndex(dbPath string) (*index, error) {
 		_ = db.Close()
 		return nil, err
 	}
+	if _, err := db.Exec(displayLogSchema); err != nil {
+		_ = db.Close()
+		return nil, err
+	}
 	return &index{db: db}, nil
 }
 

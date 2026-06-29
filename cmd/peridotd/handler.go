@@ -54,6 +54,8 @@ func (d *daemon) handle(ctx context.Context, req *pb.CommandRequest) *pb.Command
 		return &pb.CommandResponse{Ok: true, Payload: &pb.CommandResponse_Fetch{
 			Fetch: &pb.FetchPayload{Queued: queued},
 		}}
+	case *pb.CommandRequest_Stats:
+		return d.stats(c.Stats)
 	default:
 		return &pb.CommandResponse{Ok: false, Error: "unknown command"}
 	}
@@ -73,6 +75,66 @@ func (d *daemon) status() *pb.CommandResponse {
 			NextChangeIn: durationFromDuration(d.sched.NextChangeIn()),
 			Cache:        cacheStatus,
 			Sources:      d.sourceStatuses(context.Background()),
+		},
+	}}
+}
+
+func (d *daemon) stats(c *pb.StatsCommand) *pb.CommandResponse {
+	if d.cache == nil {
+		return &pb.CommandResponse{Ok: false, Error: "no cache/display log available"}
+	}
+	days := int(c.Days)
+	topN := int(c.Top)
+	if topN <= 0 {
+		topN = 10
+	}
+	total, top, sources, hourly, err := d.cache.Log().QueryStats(days, topN)
+	if err != nil {
+		return &pb.CommandResponse{Ok: false, Error: err.Error()}
+	}
+
+	names := make(map[string]string, len(d.sources))
+	for _, s := range d.sources {
+		names[s.ID()] = s.DisplayName()
+	}
+
+	topWallpapers := make([]*pb.WallpaperStat, 0, len(top))
+	for _, w := range top {
+		topWallpapers = append(topWallpapers, &pb.WallpaperStat{
+			Wallpaper: &pb.WallpaperMetadata{
+				Id:       w.WallpaperID,
+				Title:    w.Title,
+				SourceId: w.SourceID,
+			},
+			DisplayCount: w.DisplayCount,
+		})
+	}
+
+	breakdown := make([]*pb.SourceStat, 0, len(sources))
+	for _, s := range sources {
+		display := names[s.SourceID]
+		if display == "" {
+			display = s.SourceID
+		}
+		breakdown = append(breakdown, &pb.SourceStat{
+			SourceId:     s.SourceID,
+			DisplayName:  display,
+			DisplayCount: s.DisplayCount,
+		})
+	}
+
+	hourly24 := make([]int32, 24)
+	for i := 0; i < 24; i++ {
+		hourly24[i] = hourly[i]
+	}
+
+	return &pb.CommandResponse{Ok: true, Payload: &pb.CommandResponse_StatsPayload{
+		StatsPayload: &pb.StatsPayload{
+			TotalDisplays:   total,
+			Days:            c.Days,
+			TopWallpapers:   topWallpapers,
+			SourceBreakdown: breakdown,
+			HourlyCounts:    hourly24,
 		},
 	}}
 }
