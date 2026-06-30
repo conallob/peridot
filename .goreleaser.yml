@@ -43,7 +43,6 @@ signs:
     signature: "{{ .Path }}"
     artifacts: binary
     ids: [peridot, peridotd]
-    if: '{{ eq .Os "darwin" }}'
 archives:
   - formats: [tar.gz]
     name_template: "{{ .ProjectName }}_{{ .Os }}_{{ .Arch }}"
