@@ -8,7 +8,8 @@ on:
 jobs:
   release:
     name: Release
-    runs-on: ubuntu-latest
+    # macOS runner is required so codesign is available for darwin binaries.
+    runs-on: macos-latest
     permissions:
       contents: write
     steps:
@@ -20,6 +21,24 @@ jobs:
         with:
           go-version-file: go.mod
 
+      # Import the Developer ID Application certificate when the secret is
+      # present. Set MACOS_CERTIFICATE (base64-encoded .p12) and
+      # MACOS_CERTIFICATE_PASSWORD in the repository secrets to enable signing.
+      - name: Import code-signing certificate
+        if: env.MACOS_CERTIFICATE != ''
+        env:
+          MACOS_CERTIFICATE: ${{ secrets.MACOS_CERTIFICATE }}
+          MACOS_CERTIFICATE_PASSWORD: ${{ secrets.MACOS_CERTIFICATE_PASSWORD }}
+        run: |
+          echo "$MACOS_CERTIFICATE" | base64 --decode > certificate.p12
+          security create-keychain -p "" build.keychain
+          security default-keychain -s build.keychain
+          security unlock-keychain -p "" build.keychain
+          security import certificate.p12 -k build.keychain \
+            -P "$MACOS_CERTIFICATE_PASSWORD" -T /usr/bin/codesign
+          security set-key-partition-list -S apple-tool:,apple: -s -k "" build.keychain
+          rm certificate.p12
+
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v6
         with:
@@ -29,3 +48,4 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           HOMEBREW_TAP_GITHUB_TOKEN: ${{ secrets.HOMEBREW_TAP_GITHUB_TOKEN }}
+          MACOS_SIGN_IDENTITY: ${{ secrets.MACOS_SIGN_IDENTITY }}

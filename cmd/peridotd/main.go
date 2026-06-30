@@ -21,6 +21,13 @@ import (
 	// build-tagged platform_<os>.go files in this package.
 )
 
+// Injected at build time via -ldflags "-X main.version=...".
+var (
+	version = "dev"
+	commit  = "none"
+	date    = "unknown"
+)
+
 func main() {
 	log.SetPrefix("peridotd: ")
 	log.SetFlags(log.LstdFlags | log.Lmsgprefix)
@@ -113,7 +120,7 @@ func main() {
 		}
 	}()
 
-	log.Printf("peridotd started (platform=%s, config=%s)", platform.Current().Name(), configPath)
+	log.Printf("peridotd %s (commit %s, built %s) started (platform=%s, config=%s)", version, commit, date, platform.Current().Name(), configPath)
 
 	sig := make(chan os.Signal, 1)
 	signal.Notify(sig, syscall.SIGINT, syscall.SIGTERM)
