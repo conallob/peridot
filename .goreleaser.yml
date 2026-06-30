@@ -22,6 +22,28 @@ builds:
       - CGO_ENABLED=0
     ldflags:
       - -s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{.Date}}
+# Sign darwin binaries with a Developer ID Application certificate so macOS
+# identifies the author in Login Items / Gatekeeper rather than showing
+# "unidentified developer". Requires MACOS_SIGN_IDENTITY to be set in the
+# release environment (e.g. "Developer ID Application: Conall O'Brien (TEAMID)").
+# If the env var is absent the sign step is skipped gracefully.
+signs:
+  - cmd: bash
+    args:
+      - -c
+      - |
+        if [ -n "${MACOS_SIGN_IDENTITY:-}" ] && [ "{{ .Os }}" = "darwin" ]; then
+          codesign --force --deep --options runtime \
+            --sign "${MACOS_SIGN_IDENTITY}" \
+            --timestamp \
+            "{{ .Path }}"
+        else
+          cp "{{ .Path }}" "{{ .Signature }}"
+        fi
+    signature: "{{ .Path }}"
+    artifacts: binary
+    ids: [peridot, peridotd]
+    if: '{{ eq .Os "darwin" }}'
 archives:
   - formats: [tar.gz]
     name_template: "{{ .ProjectName }}_{{ .Os }}_{{ .Arch }}"

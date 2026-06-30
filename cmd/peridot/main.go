@@ -18,6 +18,13 @@ import (
 	// build-tagged platform_<os>.go files in this package.
 )
 
+// Injected at build time via -ldflags "-X main.version=...".
+var (
+	version = "dev"
+	commit  = "none"
+	date    = "unknown"
+)
+
 func main() {
 	if err := rootCmd().Execute(); err != nil {
 		fmt.Fprintln(os.Stderr, "error:", err)
@@ -27,8 +34,9 @@ func main() {
 
 func rootCmd() *cobra.Command {
 	root := &cobra.Command{
-		Use:   "peridot",
-		Short: "Control the peridot wallpaper rotation daemon",
+		Use:     "peridot",
+		Short:   "Control the peridot wallpaper rotation daemon",
+		Version: fmt.Sprintf("%s (commit %s, built %s)", version, commit, date),
 	}
 	root.AddCommand(
 		simpleCmd("next", "Advance to the next wallpaper", func() *pb.CommandRequest {

@@ -46,7 +46,13 @@ events, credential storage, service lifecycle) are abstracted behind the
 
 ## Quick start
 
-Build from source:
+Install via Homebrew (recommended):
+
+```sh
+brew install conallob/tap/peridot
+```
+
+Or build from source:
 
 ```sh
 make build
@@ -57,6 +63,16 @@ Install and start the daemon:
 ```sh
 peridot daemon install
 peridot daemon start
+```
+
+### macOS quarantine note
+
+Binaries downloaded directly (not via Homebrew) may be blocked by Gatekeeper.
+To clear the quarantine flag:
+
+```sh
+xattr -d com.apple.quarantine $(which peridot)
+xattr -d com.apple.quarantine $(which peridotd)
 ```
 
 ## Configuration
