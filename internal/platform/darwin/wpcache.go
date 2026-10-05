@@ -7,23 +7,6 @@ import (
 	"time"
 )
 
-// keepRenders is how many of the newest rendered wallpapers are left in the
-// wallpaper agent's cache. It must cover every display's current wallpaper;
-// anything the agent still needs is simply re-rendered on demand.
-const keepRenders = 8
-
-// minRenderAge protects renders the agent may still be writing or reading.
-const minRenderAge = time.Minute
-
-// wallpaperCacheDir returns the directory where macOS's wallpaper agent stores
-// decoded, full-resolution BMP renders of every image it has displayed. macOS
-// never evicts these, so rotating wallpapers fills the disk.
-func wallpaperCacheDir(home string) string {
-	return filepath.Join(home, "Library", "Containers", "com.apple.wallpaper.agent",
-		"Data", "Library", "Caches", "com.apple.wallpaper.caches",
-		"extension-com.apple.wallpaper.extension.image")
-}
-
 // pruneRenders deletes all but the newest keep *.bmp files in dir, skipping
 // files modified within minAge of now. It only touches regular files with a
 // .bmp extension (never symlinks, never cacheVersion.db) and returns the

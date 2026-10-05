@@ -77,6 +77,23 @@ func osascriptOutput(ctx context.Context, script string) (string, error) {
 	return string(out), nil
 }
 
+// keepRenders is how many of the newest rendered wallpapers are left in the
+// wallpaper agent's cache. It must cover every display's current wallpaper;
+// anything the agent still needs is simply re-rendered on demand.
+const keepRenders = 8
+
+// minRenderAge protects renders the agent may still be writing or reading.
+const minRenderAge = time.Minute
+
+// wallpaperCacheDir returns the directory where macOS's wallpaper agent stores
+// decoded, full-resolution BMP renders of every image it has displayed. macOS
+// never evicts these, so rotating wallpapers fills the disk.
+func wallpaperCacheDir(home string) string {
+	return filepath.Join(home, "Library", "Containers", "com.apple.wallpaper.agent",
+		"Data", "Library", "Caches", "com.apple.wallpaper.caches",
+		"extension-com.apple.wallpaper.extension.image")
+}
+
 // pruneWallpaperCache removes stale renders from the wallpaper agent's cache
 // (see wallpaperCacheDir). Best-effort: failures are logged, never returned.
 func pruneWallpaperCache() {
