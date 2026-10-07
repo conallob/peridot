@@ -5,8 +5,12 @@ package darwin
 import (
 	"context"
 	"fmt"
+	"log"
+	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/conallob/peridot/internal/platform"
 )
@@ -18,7 +22,9 @@ func (d *darwinDisplay) SetWallpaper(ctx context.Context, imagePath string) erro
 		`tell application "System Events" to set picture of every desktop to %q`,
 		imagePath,
 	)
-	return runOsascript(ctx, script)
+	err := runOsascript(ctx, script)
+	pruneWallpaperCache()
+	return err
 }
 
 func (d *darwinDisplay) SetWallpaperForDisplay(ctx context.Context, displayID, imagePath string) error {
@@ -27,7 +33,9 @@ func (d *darwinDisplay) SetWallpaperForDisplay(ctx context.Context, displayID, i
 		`tell application "System Events" to set picture of desktop %s to %q`,
 		displayID, imagePath,
 	)
-	return runOsascript(ctx, script)
+	err := runOsascript(ctx, script)
+	pruneWallpaperCache()
+	return err
 }
 
 func (d *darwinDisplay) Displays(ctx context.Context) ([]platform.DisplayInfo, error) {
@@ -68,4 +76,38 @@ func osascriptOutput(ctx context.Context, script string) (string, error) {
 		return "", fmt.Errorf("osascript: %w", err)
 	}
 	return string(out), nil
+}
+
+// keepRenders is how many of the newest rendered wallpapers are left in the
+// wallpaper agent's cache. It must cover every display's current wallpaper;
+// anything the agent still needs is simply re-rendered on demand.
+const keepRenders = 8
+
+// minRenderAge protects renders the agent may still be writing or reading.
+const minRenderAge = time.Minute
+
+// wallpaperCacheDir returns the directory where macOS's wallpaper agent stores
+// decoded, full-resolution BMP renders of every image it has displayed. macOS
+// never evicts these, so rotating wallpapers fills the disk.
+func wallpaperCacheDir(home string) string {
+	return filepath.Join(home, "Library", "Containers", "com.apple.wallpaper.agent",
+		"Data", "Library", "Caches", "com.apple.wallpaper.caches",
+		"extension-com.apple.wallpaper.extension.image")
+}
+
+// pruneWallpaperCache removes stale renders from the wallpaper agent's cache
+// (see wallpaperCacheDir). Best-effort: failures are logged, never returned.
+func pruneWallpaperCache() {
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return
+	}
+	files, bytes, err := pruneRenders(wallpaperCacheDir(home), keepRenders, minRenderAge, time.Now())
+	if err != nil {
+		log.Printf("darwin: prune wallpaper cache: %v", err)
+		return
+	}
+	if files > 0 {
+		log.Printf("darwin: pruned %d stale wallpaper renders (%d MiB)", files, bytes>>20)
+	}
 }
