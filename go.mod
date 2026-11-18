@@ -3,7 +3,7 @@ module github.com/conallob/peridot
 go 1.26.0
 
 require (
-	github.com/BurntSushi/toml v1.4.0
+	github.com/BurntSushi/toml v1.6.0
 	github.com/fsnotify/fsnotify v1.7.0
 	github.com/mark3labs/mcp-go v0.32.0
 	github.com/mmcdole/gofeed v1.3.0
