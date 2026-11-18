@@ -9,7 +9,7 @@ require (
 	github.com/mmcdole/gofeed v1.3.0
 	github.com/spf13/cobra v1.8.1
 	google.golang.org/api v0.188.0
-	google.golang.org/protobuf v1.36.10
+	google.golang.org/protobuf v1.36.12
 	modernc.org/sqlite v1.31.1
 )
 
